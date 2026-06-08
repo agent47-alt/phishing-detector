@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scan History</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #00ff88;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px #00ff88;
+            letter-spacing: 4px;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 40px;
+            letter-spacing: 2px;
+            text-align: center;
+        }
+
+        .back {
+            display: block;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .back a {
+            color: #00ff88;
+            text-decoration: none;
+            letter-spacing: 2px;
+            border-bottom: 1px solid #00ff88;
+            padding-bottom: 2px;
+        }
+
+        .empty {
+            text-align: center;
+            color: #444;
+            margin-top: 60px;
+            font-size: 1.2rem;
+        }
+
+        table {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #111;
+            color: #00ff88;
+            padding: 12px 15px;
+            text-align: left;
+            letter-spacing: 2px;
+            border-bottom: 1px solid #00ff88;
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #1a1a1a;
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+
+        tr:hover td {
+            background: #111;
+        }
+
+        .safe-badge {
+            color: #00ff88;
+            border: 1px solid #00ff88;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+
+        .danger-badge {
+            color: #ff4444;
+            border: 1px solid #ff4444;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+
+        .score-safe { color: #00ff88; font-weight: bold; }
+        .score-danger { color: #ff4444; font-weight: bold; }
+
+        .url-cell {
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🛡 PHISH GUARD</h1>
+    <p class="subtitle">// SCAN HISTORY //</p>
+
+    <div class="back">
+        <a href="/">← BACK TO SCANNER</a>
+    </div>
+
+    {% if scans %}
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>URL</th>
+                <th>STATUS</th>
+                <th>RISK SCORE</th>
+                <th>SCANNED AT</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for scan in scans %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td class="url-cell">{{ scan.url }}</td>
+                <td>
+                    {% if scan.is_phishing %}
+                        <span class="danger-badge">⛔ PHISHING</span>
+                    {% else %}
+                        <span class="safe-badge">✅ SAFE</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <span class="{% if scan.is_phishing %}score-danger{% else %}score-safe{% endif %}">
+                        {{ scan.risk_score }}/100
+                    </span>
+                </td>
+                <td>{{ scan.scanned_at|date:"d M Y, H:i" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% else %}
+    <p class="empty">// NO SCANS YET — GO SCAN SOME URLS! //</p>
+    {% endif %}
+
+</body>
+</html>

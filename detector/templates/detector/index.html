@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phishing URL Detector</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #00ff88;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px #00ff88;
+            letter-spacing: 4px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 40px;
+            letter-spacing: 2px;
+        }
+
+        .scan-box {
+            background: #111;
+            border: 1px solid #00ff88;
+            border-radius: 8px;
+            padding: 30px;
+            width: 100%;
+            max-width: 600px;
+            box-shadow: 0 0 30px rgba(0,255,136,0.1);
+            transition: all 0.3s;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 14px;
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 4px;
+            color: #00ff88;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            margin-bottom: 15px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        input[type="text"]:focus {
+            border-color: #00ff88;
+            box-shadow: 0 0 10px rgba(0,255,136,0.2);
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #00ff88;
+            color: #0a0a0a;
+            border: none;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: #00cc6a;
+            box-shadow: 0 0 20px rgba(0,255,136,0.4);
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .safe {
+            background: #0a1f0a;
+            border: 1px solid #00ff88;
+        }
+
+        .danger {
+            background: #1f0a0a;
+            border: 1px solid #ff4444;
+        }
+
+        .result h2 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+
+        .safe h2 { color: #00ff88; }
+        .danger h2 { color: #ff4444; }
+
+        .score {
+            font-size: 3rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .safe .score { color: #00ff88; }
+        .danger .score { color: #ff4444; }
+
+        .reasons {
+            margin-top: 15px;
+            padding: 15px;
+            background: #0a0a0a;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .reasons p {
+            color: #aaa;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        .reasons p::before {
+            content: '⚠ ';
+            color: #ffaa00;
+        }
+
+        .nav {
+            margin-top: 30px;
+        }
+
+        .nav a {
+            color: #00ff88;
+            text-decoration: none;
+            letter-spacing: 2px;
+            border-bottom: 1px solid #00ff88;
+            padding-bottom: 2px;
+            transition: all 0.3s;
+        }
+
+        .nav a:hover { color: #fff; }
+
+        /* Light mode */
+        body.light {
+            background: #f0f0f0;
+            color: #0a0a0a;
+        }
+
+        body.light h1 {
+            color: #00aa55;
+            text-shadow: none;
+        }
+
+        body.light .subtitle { color: #888; }
+
+        body.light .scan-box {
+            background: #ffffff;
+            border-color: #00aa55;
+            box-shadow: 0 0 30px rgba(0,170,85,0.1);
+        }
+
+        body.light input[type="text"] {
+            background: #f9f9f9;
+            border-color: #ccc;
+            color: #0a0a0a;
+        }
+
+        body.light input[type="text"]:focus {
+            border-color: #00aa55;
+        }
+
+        body.light button {
+            background: #00aa55;
+        }
+
+        body.light button:hover {
+            background: #008844;
+        }
+
+        body.light .result.safe {
+            background: #e6fff2;
+            border-color: #00aa55;
+        }
+
+        body.light .result.danger {
+            background: #ffe6e6;
+            border-color: #cc0000;
+        }
+
+        body.light .reasons {
+            background: #f0f0f0;
+        }
+
+        body.light .nav a {
+            color: #00aa55;
+            border-color: #00aa55;
+        }
+
+        body.light .nav a:hover { color: #000; }
+
+        /* Theme toggle button */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #111;
+            border: 1px solid #00ff88;
+            color: #00ff88;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            z-index: 1000;
+            transition: all 0.3s;
+            width: auto;
+        }
+
+        body.light .theme-toggle {
+            background: #fff;
+            border-color: #00aa55;
+            color: #00aa55;
+        }
+
+        .theme-toggle:hover { opacity: 0.8; }
+    </style>
+</head>
+<body>
+
+    <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">☀️ LIGHT</button>
+
+    <h1>🛡 PHISH GUARD</h1>
+    <p class="subtitle">// URL THREAT ANALYZER //</p>
+
+    <div class="scan-box">
+        <form method="POST">
+            {% csrf_token %}
+            <input
+                type="text"
+                name="url"
+                placeholder="Enter URL to scan... e.g. http://suspicious-site.com"
+                required
+            />
+            <button type="submit">⚡ SCAN URL</button>
+        </form>
+    </div>
+
+    {% if result %}
+    <div class="result {% if result.is_phishing %}danger{% else %}safe{% endif %}">
+        <h2>{% if result.is_phishing %}⛔ PHISHING DETECTED{% else %}✅ URL LOOKS SAFE{% endif %}</h2>
+        <p>Scanned: {{ result.url }}</p>
+        <div class="score">{{ result.risk_score }}/100</div>
+        <p>Risk Score</p>
+        {% if result.reasons %}
+        <div class="reasons">
+            <p style="color:#fff; margin-bottom:10px;">Reasons flagged:</p>
+            {% for reason in result.reasons %}
+            <p>{{ reason }}</p>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p style="margin-top:10px; color:#00ff88;">No suspicious indicators found.</p>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <div class="nav" style="display:flex; gap:20px; flex-wrap:wrap; justify-content:center;">
+        <a href="/dashboard/">📊 DASHBOARD</a>
+        <a href="/bulk-scan/">📋 BULK SCAN</a>
+        <a href="/history/">🕘 HISTORY</a>
+        <a href="/accounts/logout/">🚪 LOGOUT</a>
+    </div>
+
+    <script>
+        function toggleTheme() {
+            document.body.classList.toggle('light');
+            const btn = document.getElementById('themeBtn');
+            if (document.body.classList.contains('light')) {
+                btn.textContent = '🌙 DARK';
+                localStorage.setItem('theme', 'light');
+            } else {
+                btn.textContent = '☀️ LIGHT';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // Load saved theme on page load
+        if (localStorage.getItem('theme') === 'light') {
+            document.body.classList.add('light');
+            document.getElementById('themeBtn').textContent = '🌙 DARK';
+        }
+    </script>
+
+</body>
+</html>

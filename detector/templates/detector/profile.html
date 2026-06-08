@@ -1,0 +1,31 @@
+@login_required
+def profile(request):
+    from django.contrib.auth import update_session_auth_hash
+    from django.contrib import messages
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        if action == 'change_password':
+            current = request.POST.get('current_password')
+            new = request.POST.get('new_password')
+            confirm = request.POST.get('confirm_password')
+
+            if not request.user.check_password(current):
+                messages.error(request, '⛔ Current password is incorrect!')
+            elif new != confirm:
+                messages.error(request, '⛔ New passwords do not match!')
+            elif len(new) < 8:
+                messages.error(request, '⛔ Password must be at least 8 characters!')
+            else:
+                request.user.set_password(new)
+                request.user.save()
+                update_session_auth_hash(request, request.user)
+                messages.success(request, '✅ Password updated successfully!')
+
+    scans = ScanResult.objects.filter(user=request.user)
+    context = {
+        'total_scans': scans.count(),
+        'phishing_scans': scans.filter(is_phishing=True).count(),
+        'safe_scans': scans.filter(is_phishing=False).count(),
+    }
+    return render(request, 'detector/profile.html', context)

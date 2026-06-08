@@ -1,0 +1,6 @@
+django
+requests
+tldextract
+python-dotenv 
+python-whois
+reportlab
